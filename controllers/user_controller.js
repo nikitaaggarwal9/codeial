@@ -88,3 +88,8 @@ module.exports.createSession = function (req, res) {
         }
     })
 }
+
+module.exports.destroySession = function (req, res) {
+    res.clearCookie('user_id', '');
+    return res.redirect('/users/sign-in');
+}
