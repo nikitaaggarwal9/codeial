@@ -15,7 +15,7 @@ module.exports.index = async function(req, res) {
     return res.json(200, {
         message: "List of Posts",
         posts: posts
-    })
+    });
 }
 
 module.exports.destroy = async function(req, res) {
