@@ -15,6 +15,18 @@
                     let newPost = newPostDom(data.data.post);
                     $('#posts-list-container>ul').prepend(newPost);
                     deletePost($(' .delete-post-button', newPost));
+
+                    // enable the function of the toggle the like button on the new post
+                    new ToggleLike($('.toggle-like-button', newPost));
+
+                    new Noty ({
+                        theme: 'relax',
+                        text: "Post Published!",
+                        type: 'success',
+                        layout: 'topRight',
+                        timeout: 1500
+                    }).show();
+                    
                 }, error: function (error) {
                     console.log(error.responseText);
                 }
@@ -24,6 +36,7 @@
 
     // method to create a post in DOM
     let newPostDom = function (post) {
+        console.log(post.user);
         return $(`<li id="post-${post._id}">
         <p>
             <small>
@@ -34,6 +47,11 @@
             <br>
             <small>
                 ${post.user.name}
+            </small>
+            <small>
+                <a class="toggle-like-button" data-likes="0" href="/likes/toggle/?id=${post._id}&type=Post">
+                    0 Likes
+                </a>
             </small>
         </p>
         <div class="post-comments">

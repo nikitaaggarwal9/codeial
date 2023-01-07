@@ -14,9 +14,15 @@ const passportJWT = require('./config/passport-jwt-strategy');
 const MongoStore = require('connect-mongo')(session);
 const sassMiddleware = require('node-sass-middleware');
 
+// setup the chat server to be used with socket.io
+const chatServer = require('http').Server(app);
+const chatSockets = require('./config/chat_sockets').chatSockets(chatServer);
+chatServer.listen(5000);
+console.log('chat server is listening on port 5000');
+
 // const sassMiddleware = require('node-sass-middleware');
 // app.use(sassMiddleware({
-//     src: './assets/scss',
+    //     src: './assets/scss',
 //     dest: './assets/css',
 //     debug: true,
 //     outputStyle: 'extended',
@@ -46,6 +52,7 @@ app.use(express.static('./assets'));
 app.use('/uploads', express.static(__dirname + '/uploads'));
 
 app.use(expressLayouts);
+
 
 
 // extract style and scripts from sub pages into the layout
@@ -87,7 +94,6 @@ app.use(passport.setAuthenticatedUser);
 app.use(flash());
 app.use(customMware.setFlash);
 
-// use express router
 app.use('/', require('./routes'));
 
 

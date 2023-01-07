@@ -1,8 +1,9 @@
 const Comment = require("../models/comment");
 const Post = require("../models/post");
+const Like = require("../models/like");
 
 const commentsMailer = require("../mailers/comments_mailer");
-const queue = require('../config/kue');
+const queue = require("../config/kue");
 
 const commentEmailWorker = require("../workers/comment_email_worker");
 
@@ -24,14 +25,14 @@ module.exports.create = async function (req, res) {
       comment = await comment.populate("user", "email");
 
       //   commentsMailer.newComment(comment);
-      let job = queue.create('emails', comment).save(function(err) {
-        if(err) {
-          console.log('error in enqueing the comment in queue'); 
+      let job = queue.create("emails", comment).save(function (err) {
+        if (err) {
+          console.log("error in enqueing the comment in queue");
           return;
         }
 
         console.log("33", job.id);
-      })
+      });
 
       //   if (req.xhr) {
       //     return res.status(200).json({
@@ -52,23 +53,30 @@ module.exports.create = async function (req, res) {
   }
 };
 
-module.exports.destroy = function (req, res) {
-  Comment.findById(req.params.id, function (err, comment) {
+module.exports.destroy = async function (req, res) {
+  try {
+    let comment = await Comment.findById(req.params.id);
     // console.log("line 27", comment.user, req.user.id);
     if (comment.user == req.user.id) {
       let postId = comment.post;
       // console.log(postId);
       comment.remove();
 
-      Post.findByIdAndUpdate(
+      let post = Post.findByIdAndUpdate(
         postId,
         { $pull: { comments: req.params.id } },
         function (err, post) {
           return res.redirect("back");
         }
       );
+
+      // CHANGE :: Delete the associated likes for this comment
+      await Like.deleteMany({ likeable: comment._id, onModel: 'Comment'});
     } else {
       return res.redirect("back");
     }
-  });
+  } catch (err) {
+    console.log(err);
+    return;
+  }
 };
